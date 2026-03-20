@@ -7,8 +7,8 @@ class Value:
         self._backward = lambda: None
 
     def __add__(self, other):
-        other if isinstance(other, Value) else Value(other)
-        out = Value(self.data + other, children=(self, other), op="+")
+        other = other if isinstance(other, Value) else Value(other)
+        out = Value(self.data + other.data, children=(self, other), op="+")
 
         def backward():
             self.grad += out.grad
@@ -19,8 +19,8 @@ class Value:
         return out
 
     def __mul__(self, other):
-        other if isinstance(other, Value) else Value(other)
-        out = Value(self.data * other, children=(self, other), op="*")
+        other = other if isinstance(other, Value) else Value(other)
+        out = Value(self.data * other.data, children=(self, other), op="*")
 
         def backward():
             self.grad = other.data * out.grad
@@ -50,3 +50,9 @@ class Value:
                 for c in v.prev:
                     buildTopo(c)
                 topo.append(v)
+        buildTopo(self)
+
+        self.grad = 1
+
+        for v in reversed(topo):
+            v._backward()
